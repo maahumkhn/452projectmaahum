@@ -1,5 +1,6 @@
 from transformers import BertModel
 from gat import SimpleGAT
+from bidirect import EncoderBU, EncoderTD
 from TTransformer import TTransformerModel
 from bert_gat import SimpleGAT_BERT
 # Create the BertClassfier class
@@ -61,6 +62,9 @@ class ComboNet(nn.Module):
         self.bert_tt = TTransformerModel()
         self.user_gat = SimpleGAT(user_in, user_hid, user_out)
         self.bert_gat = SimpleGAT_BERT(in_feats,hid_feats,out_feats)
+        self.encoderTD = EncoderTD(in_feats, hid_feats,out_feats)
+        self.encoderBU = EncoderBU(in_feats, hid_feats,out_feats)
+        self.fc=nn.Linear(out_feats*2,4)
         #self.gnn = SimpleTDrumorGCN_ROOT(in_feats, hid_feats, out_feats)
         self.fc1 = nn.Linear((out_feats+user_out+D_in),H)
         self.fc2 = nn.Linear(H,D_out)
@@ -70,9 +74,12 @@ class ComboNet(nn.Module):
         seq_x = self.bert_tt(data)
         user_x = self.user_gat(data)
         bert_gat_x = self.bert_gat(data)
+        TD_x = self.encoderTD(data)
+        BU_x = self.encoderBU(data)
 
-        x = torch.cat((bert_gat_x,user_x,seq_x), 1)
+        x = torch.cat((bert_gat_x,user_x,seq_x,TD_x,BU_x), 1)
         x = self.fc1(x)
         x = self.fc2(x)
         x= F.log_softmax(x, dim=1)
         return x
+        
