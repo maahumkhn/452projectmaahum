@@ -1,5 +1,6 @@
 from transformers import BertModel
 from gat import SimpleGAT
+from bidirect import EncoderBU
 from TTransformer import TTransformerModel
 from bert_gat import SimpleGAT_BERT
 # Create the BertClassfier class
